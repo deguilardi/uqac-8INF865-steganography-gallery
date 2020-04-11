@@ -1,8 +1,8 @@
 # Steganography Gallery 
-This is an academic project developed for the discipline "Programmation de Plateformes Mobiles" conducted by Prof. Bob Menelas at University of Quebec at Chicoutimi, Canada.
+This is an academic project developed for the discipline "Programmation de Plateformes Mobiles" conducted by Prof. [Bob Menelas](https://github.com/bobantoine) at University of Quebec at Chicoutimi, Canada.
   
 ## About the app
-Steganography Gallery is a photo gallery which allows you to hide text in an image using (steganography)[https://fr.wikipedia.org/wiki/St%C3%A9ganographie].
+Steganography Gallery is a photo gallery which allows you to hide text in an image using [steganography](https://fr.wikipedia.org/wiki/St%C3%A9ganographie).
 
 ## Functionalities
 * Display all the photos of the device in a sort of image gallery;
@@ -18,6 +18,6 @@ You will need Android Studio.
 After setting up, import the project on Android Studio, select a device or emulator and hit the play button.
 
 ## Team
-* ALBL26609806 Albert, Léna
-* GUID09058608 Guilardi, Demetrio
-* TANL19119707 Tang, Loïc
+* [ALBL26609806 Albert, Léna](https://github.com/lenalbert)
+* [GUID09058608 Guilardi, Demetrio](https://github.com/deguilardi)
+* [TANL19119707 Tang, Loïc](https://github.com/Neaum)
