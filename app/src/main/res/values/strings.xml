@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Steganography Gallery</string>
+
+    <string name="transition_thumb">transition_thumb</string>
 </resources>
