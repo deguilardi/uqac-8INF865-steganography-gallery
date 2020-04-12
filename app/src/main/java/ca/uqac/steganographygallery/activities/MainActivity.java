@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -19,6 +20,7 @@ import butterknife.ButterKnife;
 import ca.uqac.steganographygallery.Config;
 import ca.uqac.steganographygallery.PicturesAdapter;
 import ca.uqac.steganographygallery.R;
+import ca.uqac.steganographygallery.Steganography;
 
 public class MainActivity extends AppCompatActivity implements PicturesAdapter.PicturesAdapterOnClickHandler {
 
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("stegano", "test");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
                 adapterViewHolder.getThumbView(),
                 getString(R.string.transition_thumb)
         );
+        //Steganography s = new Steganography(filePath, "test");
         Intent detailsActivityIntent = new Intent(MainActivity.this, DetailActivity.class);
         detailsActivityIntent.putExtra(DetailActivity.PARAM_PICTURE, filePath);
         startActivity(detailsActivityIntent, options.toBundle());
