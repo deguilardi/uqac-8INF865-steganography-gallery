@@ -1,6 +1,7 @@
 package ca.uqac.steganographygallery;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -55,9 +57,13 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
         // set the thumb height to fix the elements on the screen and avoid "dancing"
         adapterViewHolder.thumbView.setMinimumHeight(mSize);
 
+        // translate path
+        String path = mData.get(position);
+        File file = new File(path);
+
         // parse te result
-        String picturePath = mData.get(position);
-        Picasso.with(mContext).load(picturePath)
+        Picasso.get()
+                .load(file)
                 .resize(mSize, mSize)
                 .centerCrop()
                 .placeholder(R.drawable.placeholder)

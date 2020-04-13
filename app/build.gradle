@@ -36,7 +36,7 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.1.0"
 
     // other libs
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.jakewharton:butterknife:10.2.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.1'
 

@@ -1,20 +1,25 @@
 package ca.uqac.steganographygallery.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +37,7 @@ import ca.uqac.steganographygallery.Steganography;
 
 public class MainActivity extends AppCompatActivity implements PicturesAdapter.PicturesAdapterOnClickHandler {
 
+
     private PicturesAdapter mPicturesAdapter;
 
     @BindView(R.id.recyclerview_pic_list) RecyclerView mRecyclerView;
@@ -41,9 +47,22 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
         Log.i("steganoTag", "test");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-        setupUI();
-        loadPictures();
+        //pour la permission de stockage
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED)
+        {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1000);
+
+        }
+        else
+            {
+            // affiche l'image
+                ButterKnife.bind(this);
+                setupUI();
+                loadPictures();
+            }
+
+
+
     }
 
     private void setupUI(){
@@ -64,22 +83,21 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
     }
 
     private void loadPictures(){
-        // @TODO load pictures on the device here
+        Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null,null,null, MediaStore.Images.Media.DEFAULT_SORT_ORDER);
 
-        ArrayList<String> picturesList = new ArrayList<>(8);
-        picturesList.add(getURLForResource(R.drawable.test1));
-        picturesList.add(getURLForResource(R.drawable.test2));
-        picturesList.add(getURLForResource(R.drawable.test3));
-        picturesList.add(getURLForResource(R.drawable.test4));
-        picturesList.add(getURLForResource(R.drawable.test5));
-        picturesList.add(getURLForResource(R.drawable.test6));
-        picturesList.add(getURLForResource(R.drawable.test7));
-        picturesList.add(getURLForResource(R.drawable.test8));
-        mPicturesAdapter.swapData(picturesList);
-    }
-
-    public String getURLForResource (int resourceId) {
-        return Uri.parse("android.resource://"+R.class.getPackage().getName()+"/" +resourceId).toString();
+        if(cursor != null && cursor.moveToFirst()) {
+            ArrayList<String> picturesList = new ArrayList<>(cursor.getCount());
+            while (!cursor.isAfterLast()) {
+                picturesList.add(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+                cursor.moveToNext();
+            }
+            cursor.close();
+            mPicturesAdapter.swapData(picturesList);
+        }
+        else{
+            Toast.makeText(this, "Couldn't load images from device", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -106,4 +124,27 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
         startActivity(detailsActivityIntent, options.toBundle());
     }
 
+
+   @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+   {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode==1000)
+        {
+            if (grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                //show the image
+                ButterKnife.bind(this);
+                setupUI();
+                loadPictures();
+
+                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+
+            }
+            else{
+                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
+                finish();
+
+            }
+        }
+    }
 }
