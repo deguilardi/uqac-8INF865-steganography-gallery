@@ -7,12 +7,16 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -77,21 +81,26 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
         // @TODO load pictures on the device here
 
         ArrayList<String> picturesList = new ArrayList<>(8);
-        picturesList.add(getURLForResource(R.drawable.test1));
+        Cursor mCursor= getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null,null,null,MediaStore.Images.Media.DEFAULT_SORT_ORDER);
+        mCursor.moveToFirst();
+        while(!mCursor.isAfterLast()) {
+
+            picturesList.add(mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+            mCursor.moveToNext();
+        }
+        mCursor.close();
+
+        /*picturesList.add(getURLForResource(R.drawable.test1));
         picturesList.add(getURLForResource(R.drawable.test2));
         picturesList.add(getURLForResource(R.drawable.test3));
         picturesList.add(getURLForResource(R.drawable.test4));
         picturesList.add(getURLForResource(R.drawable.test5));
         picturesList.add(getURLForResource(R.drawable.test6));
         picturesList.add(getURLForResource(R.drawable.test7));
-        picturesList.add(getURLForResource(R.drawable.test8));
+        picturesList.add(getURLForResource(R.drawable.test8));*/
 
-        String path = Environment.getExternalStorageDirectory().toString()+"/Images-";
-        File directory = new File(path);
-        File[] files = directory.listFiles();
-        for (int i = 0; i < files.length; i++){
-            picturesList.add(path);
-        }
+
 
         mPicturesAdapter.swapData(picturesList);
 
