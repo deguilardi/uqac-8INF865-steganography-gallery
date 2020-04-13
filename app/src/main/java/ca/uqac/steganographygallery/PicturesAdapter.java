@@ -28,7 +28,7 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
     private int mSize;
 
     public interface PicturesAdapterOnClickHandler {
-        void onClick(String filePath, PicturesAdapter.PicturesAdapterViewHolder adapterViewHolder);
+        void onSelectItem(String filePath, PicturesAdapter.PicturesAdapterViewHolder adapterViewHolder);
     }
 
     public PicturesAdapter(@NonNull Activity context, PicturesAdapterOnClickHandler clickHandler, int numColumns) {
@@ -102,7 +102,7 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
         @Override
         public void onClick(View v) {
             int position = getAdapterPosition();
-            mClickHandler.onClick(mData.get(position), this);
+            mClickHandler.onSelectItem(mData.get(position), this);
         }
     }
 }

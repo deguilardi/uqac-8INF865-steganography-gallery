@@ -7,11 +7,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -21,11 +19,6 @@ import android.view.Surface;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -33,11 +26,10 @@ import butterknife.ButterKnife;
 import ca.uqac.steganographygallery.Config;
 import ca.uqac.steganographygallery.PicturesAdapter;
 import ca.uqac.steganographygallery.R;
-import ca.uqac.steganographygallery.Steganography;
 
 public class MainActivity extends AppCompatActivity implements PicturesAdapter.PicturesAdapterOnClickHandler {
 
-
+    private static final int PERMISSIONS_REQUEST_CODE = 1000;
     private PicturesAdapter mPicturesAdapter;
 
     @BindView(R.id.recyclerview_pic_list) RecyclerView mRecyclerView;
@@ -48,21 +40,15 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //pour la permission de stockage
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED)
-        {
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1000);
-
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},PERMISSIONS_REQUEST_CODE);
         }
-        else
-            {
+        else{
             // affiche l'image
-                ButterKnife.bind(this);
-                setupUI();
-                loadPictures();
-            }
-
-
-
+            ButterKnife.bind(this);
+            setupUI();
+            loadPictures();
+        }
     }
 
     private void setupUI(){
@@ -101,24 +87,11 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
     }
 
     @Override
-    public void onClick(String filePath, PicturesAdapter.PicturesAdapterViewHolder adapterViewHolder) {
+    public void onSelectItem(String filePath, PicturesAdapter.PicturesAdapterViewHolder adapterViewHolder) {
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,
                 adapterViewHolder.getThumbView(),
                 getString(R.string.transition_thumb)
         );
-        try {
-
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(filePath));
-            Steganography s = new Steganography(bitmap, "test");
-            bitmap = s.hideMessage();
-            /*File file = new File(filePath);
-            FileOutputStream out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            Log.i("steganoTag", "file saved");
-            out.close();*/
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         Intent detailsActivityIntent = new Intent(MainActivity.this, DetailActivity.class);
         detailsActivityIntent.putExtra(DetailActivity.PARAM_PICTURE, filePath);
         startActivity(detailsActivityIntent, options.toBundle());
@@ -129,21 +102,16 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode==1000)
+        if (requestCode==PERMISSIONS_REQUEST_CODE)
         {
             if (grantResults[0]==PackageManager.PERMISSION_GRANTED){
                 //show the image
                 ButterKnife.bind(this);
                 setupUI();
                 loadPictures();
-
-                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
-
             }
             else{
-                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show();
-                finish();
-
+                Toast.makeText(this, "Error! Permission not granted", Toast.LENGTH_LONG).show();
             }
         }
     }
