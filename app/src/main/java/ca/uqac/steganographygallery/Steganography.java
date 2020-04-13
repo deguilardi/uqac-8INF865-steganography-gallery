@@ -3,25 +3,17 @@ package ca.uqac.steganographygallery;
 // STEGANOGRAPHY -- ANDROID PROJECT
 
 
-import android.content.ContentResolver;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 
 public class Steganography{
 
-    Bitmap img = null;
-    String msg = "";
+    private Bitmap img;
+    private String msg = "";
 
     public Steganography(Bitmap bitmap, String msg) throws FileNotFoundException {
         /*this.filePath = filePath;
@@ -112,7 +104,7 @@ public class Steganography{
     }
 
 
-    public int overrideLastsBits(int byteToChange, int bitZero, int bitOne){
+    private int overrideLastsBits(int byteToChange, int bitZero, int bitOne){
         int mask = 1 << 1;
         byteToChange = (byteToChange & ~mask) | ((bitOne << 1) & mask);
         mask = 1 << 0;
@@ -121,7 +113,7 @@ public class Steganography{
     }
 
 
-    public ArrayList<Integer> getMessage (){
+    private ArrayList<Integer> getMessage (){
         int i=0;
         int countBits=0;
         int[] pixelsArray = getPixels();
@@ -170,7 +162,7 @@ public class Steganography{
     }
 
 
-    public String bitsToString(){
+    public String getHiddenMessage(){
         ArrayList<Integer> bitsArray = getMessage();
         if(bitsArray.size() == 0){
             return "";

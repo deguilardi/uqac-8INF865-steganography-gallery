@@ -1,17 +1,15 @@
 package ca.uqac.steganographygallery.activities;
 
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,7 +21,6 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 
 import butterknife.BindView;
@@ -38,6 +35,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     File mPictureFile;
     @BindView(R.id.thumb_view) ImageView mThumbView;
     @BindView(R.id.btn_save) Button mBtnSave;
+    @BindView(R.id.txt_edit) EditText mTxtEdit;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,10 +49,10 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         Bitmap bitmap = null;
         try {
             bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + mPictureFile.getAbsolutePath()));
-            Steganography s = new Steganography(bitmap, "");
-            if(s.bitsToString() != ""){
-                TextView textview = (TextView)findViewById(R.id.text_view);
-                textview.setText(s.bitsToString());
+            Steganography s11y = new Steganography(bitmap, "");
+            String hiddenText = s11y.getHiddenMessage();
+            if(!hiddenText.equals("")){
+                mTxtEdit.setText(hiddenText);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,22 +88,14 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btn_save){
-            AssetManager assetManager = getAssets();
             try {
-                //InputStream imageBytes = assetManager.open("file://" + mPictureFile.getAbsolutePath());
-                Toast.makeText(this, "Trying to use Steganography", Toast.LENGTH_SHORT).show();
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + mPictureFile.getAbsolutePath()));
-                Toast.makeText(this, "bitmap charged "+bitmap.getWidth(), Toast.LENGTH_SHORT).show();
-
-                //replace "test" msg by content of textview
-                Steganography s = new Steganography(bitmap, "test");
-                bitmap = s.hideMessage();
-                Toast.makeText(this, "bitmap modified", Toast.LENGTH_SHORT).show();
+                Steganography s11y = new Steganography(bitmap, "test");
+                bitmap = s11y.hideMessage();
                 FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
-                Toast.makeText(this, "outputstream created", Toast.LENGTH_SHORT).show();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                Toast.makeText(this, "bitmap saved", Toast.LENGTH_SHORT).show();
                 out.close();
+                Toast.makeText(this, "Image saved", Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 Toast.makeText(this, "Error loading image file", Toast.LENGTH_SHORT).show();
             }
