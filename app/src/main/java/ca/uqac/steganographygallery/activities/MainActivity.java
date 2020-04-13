@@ -78,33 +78,20 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
     }
 
     private void loadPictures(){
-        // @TODO load pictures on the device here
-
-        ArrayList<String> picturesList = new ArrayList<>(8);
-        Cursor mCursor= getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 null,null,null,MediaStore.Images.Media.DEFAULT_SORT_ORDER);
-        mCursor.moveToFirst();
-        while(!mCursor.isAfterLast()) {
-
-            picturesList.add(mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA)));
-            mCursor.moveToNext();
+        if(cursor != null && cursor.moveToFirst()) {
+            ArrayList<String> picturesList = new ArrayList<>(cursor.getCount());
+            while (!cursor.isAfterLast()) {
+                picturesList.add(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+                cursor.moveToNext();
+            }
+            cursor.close();
+            mPicturesAdapter.swapData(picturesList);
         }
-        mCursor.close();
-
-        /*picturesList.add(getURLForResource(R.drawable.test1));
-        picturesList.add(getURLForResource(R.drawable.test2));
-        picturesList.add(getURLForResource(R.drawable.test3));
-        picturesList.add(getURLForResource(R.drawable.test4));
-        picturesList.add(getURLForResource(R.drawable.test5));
-        picturesList.add(getURLForResource(R.drawable.test6));
-        picturesList.add(getURLForResource(R.drawable.test7));
-        picturesList.add(getURLForResource(R.drawable.test8));*/
-
-
-
-        mPicturesAdapter.swapData(picturesList);
-
-
+        else{
+            // @TODO inform user. Missing permission?
+        }
     }
 
     public String getURLForResource (int resourceId) {
