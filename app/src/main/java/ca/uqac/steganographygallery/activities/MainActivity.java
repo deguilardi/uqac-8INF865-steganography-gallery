@@ -6,13 +6,21 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -30,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i("stegano", "test");
+        Log.i("steganoTag", "test");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -80,9 +88,22 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
                 adapterViewHolder.getThumbView(),
                 getString(R.string.transition_thumb)
         );
-        //Steganography s = new Steganography(filePath, "test");
+        try {
+
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(filePath));
+            Steganography s = new Steganography(bitmap, "test");
+            bitmap = s.hideMessage();
+            /*File file = new File(filePath);
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            Log.i("steganoTag", "file saved");
+            out.close();*/
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Intent detailsActivityIntent = new Intent(MainActivity.this, DetailActivity.class);
         detailsActivityIntent.putExtra(DetailActivity.PARAM_PICTURE, filePath);
         startActivity(detailsActivityIntent, options.toBundle());
     }
+
 }

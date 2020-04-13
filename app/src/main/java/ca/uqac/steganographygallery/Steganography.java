@@ -3,11 +3,13 @@ package ca.uqac.steganographygallery;
 // STEGANOGRAPHY -- ANDROID PROJECT
 
 
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 
 
@@ -17,28 +19,24 @@ public class Steganography{
     Bitmap img = null;
     String msg = "";
 
-    public Steganography(String path, String msg){
-        Log.i("stegano","appel au constructeur");
-        f = new File(path);
-        if(f.exists()){
-            img = BitmapFactory.decodeFile(f.getAbsolutePath());
-        }
+    public Steganography(Bitmap bitmap, String msg){
+        Log.i("steganoTag","appel au constructeur");
+        this.img = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         this.msg = msg;
+        Log.i("steganoTag", "msg = "+this.msg);
     }
 
-    private int[][] getPixels(){
-        Log.i("stegano", "image de "+img.getWidth()+" par "+img.getHeight());
-        int[][] pixelsArray = new int[img.getHeight()][img.getWidth()];
-        for(int i=0; i<img.getHeight(); i++){
-            for(int j=0; j<img.getWidth(); j++){
-                pixelsArray[i][j] = img.getPixel(i,j);
-            }
-        }
+    private int[] getPixels(){
+        Log.i("steganoTag", "get pixel");
+        Log.i("steganoTag", "image de "+img.getWidth()+" par "+img.getHeight());
+        int[] pixelsArray = new int[img.getHeight()*img.getWidth()];
+        Log.i("steganoTag", "pixelsArray created");
+        img.getPixels(pixelsArray, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
         return pixelsArray;
     }
 
     private ArrayList<Integer> stringToBits(){
-        Log.i("stegano", "msg = "+msg);
+        Log.i("steganoTag", "msg = "+msg);
         List<Integer> EOMList = Arrays.asList(1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0);
         ArrayList<Integer> bitsArray = new ArrayList<Integer>();
         bitsArray.addAll(EOMList);
@@ -51,20 +49,22 @@ public class Steganography{
                 bitsArray.add(Character.getNumericValue(byteTemp.charAt(j)));
             }
         }
-        Log.i("stegano", "encoded msg = "+sb.toString());
+        Log.i("steganoTag", "encoded msg = "+sb.toString());
         bitsArray.addAll(EOMList);
         return bitsArray;
     }
 
-    public void hideMessage(){
+    public Bitmap hideMessage(){
         int i=0;
-        int j = 0;
         int countBits=0;
-        int[][] pixelsArray = getPixels();
+        Log.i("steganoTag", "hide message");
+        int[] pixelsArray = getPixels();
+        Log.i("steganoTag", "getPixels return array of size "+pixelsArray.length);
         ArrayList<Integer> bitsArray = stringToBits();
-        while(countBits<bitsArray.size() && i<pixelsArray.length && j<pixelsArray[0].length){
+        Log.i("steganoTag", "msg returned; bitsArray size = "+bitsArray.size());
+        while(countBits<bitsArray.size() && i<pixelsArray.length){
 
-            int pixel = pixelsArray[i][j];
+            int pixel = pixelsArray[i];
 
             int alpha = (pixel>>24) & 0xFF;
             int valueBitZero = bitsArray.get(countBits);
@@ -91,32 +91,33 @@ public class Steganography{
             countBits++;
 
             pixel = (alpha<<24) | (red<<16) | (green<<8) | blue;
-            img.setPixel(i, j, pixel);
+            pixelsArray[i] = pixel;
             i++;
-            j++;
         }
-
+        Log.i("steganoTag", "transformation completed");
+        img.setPixels(pixelsArray, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
+        return img;
     }
 
 
     public int overrideLastsBits(int byteToChange, int bitZero, int bitOne){
         int mask = 1 << 1;
-        byteToChange = (byteToChange & ~mask) | ((bitZero << 1) & mask);
+        byteToChange = (byteToChange & ~mask) | ((bitOne << 1) & mask);
         mask = 1 << 0;
-        return (byteToChange & ~mask) | ((bitOne << 0) & mask);
+        byteToChange = (byteToChange & ~mask) | ((bitZero << 0) & mask);
+        return byteToChange;
     }
 
 
     public ArrayList<Integer> getMessage (){
         int i=0;
-        int j=0;
         int countBits=0;
-        int[][] pixelsArray = getPixels();
+        int[] pixelsArray = getPixels();
         ArrayList<Integer> bitsArray = new ArrayList<Integer>();
         List<Integer> EOMList = Arrays.asList(1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0);
-        while(countBits<bitsArray.size() && i<pixelsArray.length && j<pixelsArray[0].length){
+        while(countBits<bitsArray.size() && i<pixelsArray.length){
 
-            int pixel = pixelsArray[i][j];
+            int pixel = pixelsArray[i];
 
             int alpha = (pixel>>24) & 0xFF;
             bitsArray.add(alpha & 2);
@@ -143,7 +144,7 @@ public class Steganography{
                 boolean eq = true;
                 int k=0;
                 for(int p=15; p>=0; p--){
-                    if(bitsArray.get(bitsArray.size()-p)!=EOMList.get(j++)){
+                    if(bitsArray.get(bitsArray.size()-p)!=EOMList.get(k++)){
                         eq = false;
                         break;
                     }
@@ -152,7 +153,6 @@ public class Steganography{
                     return bitsArray;
             }
             i++;
-            j++;
         }
         return bitsArray;
     }
