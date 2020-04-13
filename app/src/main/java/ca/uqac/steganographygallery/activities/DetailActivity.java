@@ -90,7 +90,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         if(v.getId() == R.id.btn_save){
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + mPictureFile.getAbsolutePath()));
-                Steganography s11y = new Steganography(bitmap, "test");
+                Steganography s11y = new Steganography(bitmap, mTxtEdit.getText().toString());
                 bitmap = s11y.hideMessage();
                 FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
