@@ -7,21 +7,29 @@ import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
 
 public class Steganography{
 
-    File f = null;
     Bitmap img = null;
     String msg = "";
 
-    public Steganography(Bitmap bitmap, String msg){
+    public Steganography(Bitmap bitmap, String msg) throws FileNotFoundException {
+        /*this.filePath = filePath;
         Log.i("steganoTag","appel au constructeur");
+        FileInputStream in = new FileInputStream(filePath);
+        this.img = BitmapFactory.decodeStream(in).copy(Bitmap.Config.ARGB_8888, true);*/
         this.img = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Log.i("steganoTag","img width = "+img.getWidth());
         this.msg = msg;
         Log.i("steganoTag", "msg = "+this.msg);
     }
@@ -54,7 +62,7 @@ public class Steganography{
         return bitsArray;
     }
 
-    public Bitmap hideMessage(){
+    public Bitmap hideMessage() throws IOException {
         int i=0;
         int countBits=0;
         Log.i("steganoTag", "hide message");
@@ -97,6 +105,10 @@ public class Steganography{
         Log.i("steganoTag", "transformation completed");
         img.setPixels(pixelsArray, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
         return img;
+        /*FileOutputStream out = new FileOutputStream(filePath);
+        img.compress(Bitmap.CompressFormat.PNG, 100, out);
+        Log.i("steganoTag", "file saved");
+        out.close();*/
     }
 
 
