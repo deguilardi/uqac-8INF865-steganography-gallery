@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.Objects;
 
 import butterknife.BindView;
@@ -40,7 +41,11 @@ public class DetailActivity extends AppCompatActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
 
-        Picasso.with(this).load(picturePath)
+        // translate path
+        File file = new File(picturePath);
+
+        Picasso.get()
+                .load(file)
                 .resize(screenWidth, screenWidth)
                 .centerCrop()
                 .error(R.drawable.placeholder)

@@ -79,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
 
     private void loadPictures(){
         Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                null,null,null,MediaStore.Images.Media.DEFAULT_SORT_ORDER);
+                null,null,null, MediaStore.Images.Media.DEFAULT_SORT_ORDER);
+
         if(cursor != null && cursor.moveToFirst()) {
             ArrayList<String> picturesList = new ArrayList<>(cursor.getCount());
             while (!cursor.isAfterLast()) {
@@ -90,12 +91,8 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
             mPicturesAdapter.swapData(picturesList);
         }
         else{
-            // @TODO inform user. Missing permission?
+            Toast.makeText(this, "Couldn't load images from device", Toast.LENGTH_LONG).show();
         }
-    }
-
-    public String getURLForResource (int resourceId) {
-        return Uri.parse("android.resource://"+R.class.getPackage().getName()+"/" +resourceId).toString();
     }
 
     @Override
