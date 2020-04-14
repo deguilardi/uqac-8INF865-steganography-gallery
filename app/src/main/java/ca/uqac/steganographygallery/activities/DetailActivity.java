@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.HandlerThread;
 import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,7 +58,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         Runnable runnable = () -> {
             Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath());
             Steganography s11y = new Steganography(bitmap);
+            bitmap.recycle();
             String hiddenText = s11y.getHiddenMessage();
+            s11y.free();
             if (!hiddenText.equals("")) {
                 runOnUiThread(() -> mTxtEdit.setText(hiddenText));
             }
@@ -109,16 +109,18 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                 try {
                     BitmapFactory.Options op = new BitmapFactory.Options();
                     op.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                    Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
-                    Steganography s11y = new Steganography(bitmap);
-                    bitmap = s11y.hideMessage(Objects.requireNonNull(mTxtEdit.getText()).toString());
+                    Bitmap original = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
+                    Steganography s11y = new Steganography(original);
+                    original.recycle();
+                    Bitmap bitmap = s11y.hideMessage(Objects.requireNonNull(mTxtEdit.getText()).toString());
                     FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                     out.close();
+                    bitmap.recycle();
+                    s11y.free();
                     runOnUiThread(() -> Toast.makeText(self, R.string.saving_success_alert, Toast.LENGTH_SHORT).show());
-                } catch (IOException e) {
+                } catch (IOException ignore) {
                     runOnUiThread(() -> Toast.makeText(self, R.string.saving_error_alert, Toast.LENGTH_SHORT).show());
-                    Toast.makeText(self, R.string.saving_error_alert, Toast.LENGTH_SHORT).show();
                 } finally {
                     runOnUiThread(() -> {
                         mSpinner.setVisibility(View.GONE);

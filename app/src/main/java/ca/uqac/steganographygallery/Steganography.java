@@ -18,6 +18,12 @@ public class Steganography{
         this.img = bitmap.copy(Bitmap.Config.ARGB_8888, true);
     }
 
+    public void free(){
+        if(img != null){
+            img.recycle();
+        }
+    }
+
     private int[] getPixels(){
         int[] pixelsArray = new int[img.getHeight()*img.getWidth()];
         img.getPixels(pixelsArray, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
