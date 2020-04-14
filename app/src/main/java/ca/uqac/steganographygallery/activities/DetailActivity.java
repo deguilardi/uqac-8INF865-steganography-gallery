@@ -1,11 +1,16 @@
 package ca.uqac.steganographygallery.activities;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.HandlerThread;
 import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,7 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.LinearLayoutCompat;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -35,6 +42,8 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     @BindView(R.id.thumb_view) AppCompatImageView mThumbView;
     @BindView(R.id.btn_save) AppCompatButton mBtnSave;
     @BindView(R.id.txt_edit) AppCompatEditText mTxtEdit;
+    @BindView(R.id.content_holder) LinearLayoutCompat mContentHolder;
+    @BindView(R.id.spinner) LottieAnimationView mSpinner;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,12 +57,15 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         mPictureFile = new File(Objects.requireNonNull(picturePath));
 
         // decode and show initial message
-        Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath());
-        Steganography s11y = new Steganography(bitmap);
-        String hiddenText = s11y.getHiddenMessage();
-        if(!hiddenText.equals("")) {
-            mTxtEdit.setText(hiddenText);
-        }
+        Runnable runnable = () -> {
+            Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath());
+            Steganography s11y = new Steganography(bitmap);
+            String hiddenText = s11y.getHiddenMessage();
+            if (!hiddenText.equals("")) {
+                runOnUiThread(() -> mTxtEdit.setText(hiddenText));
+            }
+        };
+        new Thread(runnable).start();
 
         mBtnSave.setOnClickListener(this);
         setupUI();
@@ -88,19 +100,44 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btn_save){
-            try {
-                BitmapFactory.Options op = new BitmapFactory.Options();
-                op.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
-                Steganography s11y = new Steganography(bitmap);
-                bitmap = s11y.hideMessage(Objects.requireNonNull(mTxtEdit.getText()).toString());
-                FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                out.close();
-                Toast.makeText(this, R.string.saving_success_alert, Toast.LENGTH_SHORT).show();
-            } catch (IOException e) {
-                Toast.makeText(this, R.string.saving_error_alert, Toast.LENGTH_SHORT).show();
-            }
+            hideKeyboard();
+            mSpinner.setVisibility(View.VISIBLE);
+            mContentHolder.setVisibility(View.GONE);
+
+            final Context self = this;
+            Runnable runnable = () -> {
+                try {
+                    BitmapFactory.Options op = new BitmapFactory.Options();
+                    op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
+                    Steganography s11y = new Steganography(bitmap);
+                    bitmap = s11y.hideMessage(Objects.requireNonNull(mTxtEdit.getText()).toString());
+                    FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    out.close();
+                    runOnUiThread(() -> Toast.makeText(self, R.string.saving_success_alert, Toast.LENGTH_SHORT).show());
+                } catch (IOException e) {
+                    runOnUiThread(() -> Toast.makeText(self, R.string.saving_error_alert, Toast.LENGTH_SHORT).show());
+                    Toast.makeText(self, R.string.saving_error_alert, Toast.LENGTH_SHORT).show();
+                } finally {
+                    runOnUiThread(() -> {
+                        mSpinner.setVisibility(View.GONE);
+                        mContentHolder.setVisibility(View.VISIBLE);
+                    });
+                }
+            };
+            new Thread(runnable).start();
+        }
+    }
+
+    private void hideKeyboard(){
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        View view = getCurrentFocus();
+        if (view == null) {
+            view = new View(this);
+        }
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 }
