@@ -1,6 +1,5 @@
 package ca.uqac.steganographygallery.activities;
 
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -42,16 +41,20 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
-        Bundle b = getIntent().getExtras();
-        String picturePath = Objects.requireNonNull(b).getString(PARAM_PICTURE);
-        mPictureFile = new File(picturePath);
-        Bitmap bitmap = null;
-        bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath());
-        Steganography s = new Steganography(bitmap, "");
-        String hiddenText = s.getHiddenMessage();
+
+        // retrieve selected picture path from the main activity
+        Bundle bundle = getIntent().getExtras();
+        String picturePath = Objects.requireNonNull(bundle).getString(PARAM_PICTURE);
+        mPictureFile = new File(Objects.requireNonNull(picturePath));
+
+        // decode and show initial message
+        Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath());
+        Steganography s11y = new Steganography(bitmap);
+        String hiddenText = s11y.getHiddenMessage();
         if(!hiddenText.equals("")) {
             mTxtEdit.setText(hiddenText);
         }
+
         mBtnSave.setOnClickListener(this);
         setupUI();
     }
@@ -62,10 +65,12 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
+        int screenHeight = displayMetrics.heightPixels;
+        int size = Math.min(screenWidth, screenHeight);
 
         Picasso.get()
                 .load(mPictureFile)
-                .resize(screenWidth, screenWidth)
+                .resize(size, size)
                 .centerCrop()
                 .error(R.drawable.placeholder)
                 .into(mThumbView);
@@ -83,20 +88,16 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.btn_save){
-            AssetManager assetManager = getAssets();
             try {
-
                 BitmapFactory.Options op = new BitmapFactory.Options();
                 op.inPreferredConfig = Bitmap.Config.ARGB_8888;
                 Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
-                Steganography s1 = new Steganography(bitmap, mTxtEdit.getText().toString());
-                bitmap = s1.hideMessage();
-                Steganography s2 = new Steganography(bitmap, "");
-                Toast.makeText(this, s2.getHiddenMessage(), Toast.LENGTH_SHORT).show();
-
+                Steganography s11y = new Steganography(bitmap);
+                bitmap = s11y.hideMessage(mTxtEdit.getText().toString());
                 FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                 out.close();
+                Toast.makeText(this, "Message hidden with success", Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 Toast.makeText(this, "Error loading image file", Toast.LENGTH_SHORT).show();
             }

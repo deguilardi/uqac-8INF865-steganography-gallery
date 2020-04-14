@@ -1,7 +1,6 @@
 package ca.uqac.steganographygallery;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,10 +20,9 @@ import butterknife.ButterKnife;
 
 public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.PicturesAdapterViewHolder>{
 
-    Activity mContext;
+    private Activity mContext;
     private ArrayList<String> mData;
     final private PicturesAdapterOnClickHandler mClickHandler;
-    private int mNumColumns;
     private int mSize;
 
     public interface PicturesAdapterOnClickHandler {
@@ -34,13 +32,14 @@ public class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.Pictur
     public PicturesAdapter(@NonNull Activity context, PicturesAdapterOnClickHandler clickHandler, int numColumns) {
         mContext = context;
         mClickHandler = clickHandler;
-        mNumColumns = numColumns;
 
         // define the image size based on device size
         DisplayMetrics displayMetrics = new DisplayMetrics();
         mContext.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
-        mSize = screenWidth / mNumColumns;
+        int screenHeight = displayMetrics.heightPixels;
+        int size = Math.min(screenWidth, screenHeight);
+        mSize = size / numColumns;
     }
 
     @NonNull

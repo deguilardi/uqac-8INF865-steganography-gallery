@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,11 +55,11 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
     private void setupUI(){
 
         // define num of columns based on device orientation
-        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        Display display = ((WindowManager) Objects.requireNonNull(getSystemService(WINDOW_SERVICE))).getDefaultDisplay();
         int numColumns = Config.HOME_LIST_NUM_COLUMNS;
         numColumns = display.getRotation() == Surface.ROTATION_0 || display.getRotation() == Surface.ROTATION_180
                 ? numColumns
-                : (int) (numColumns * Config.HOME_LIST_COLUMNS_RATIO);
+                : numColumns * Config.HOME_LIST_COLUMNS_RATIO;
 
         // start layout and adapter
         GridLayoutManager layoutManager = new GridLayoutManager(this, numColumns);

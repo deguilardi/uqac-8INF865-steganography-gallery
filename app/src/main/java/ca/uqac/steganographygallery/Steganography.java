@@ -3,29 +3,19 @@ package ca.uqac.steganographygallery;
 // STEGANOGRAPHY -- ANDROID PROJECT
 
 
-import android.content.ContentResolver;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
-import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class Steganography{
 
     private Bitmap img;
-    private String msg = "";
 
-    public Steganography(Bitmap bitmap, String msg) {
+    public Steganography(Bitmap bitmap) {
         this.img = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        this.msg = msg;
     }
 
     private int[] getPixels(){
@@ -34,15 +24,14 @@ public class Steganography{
         return pixelsArray;
     }
 
-    private ArrayList<Integer> stringToBits(){
+    private ArrayList<Integer> stringToBits(String msg){
         List<Integer> EOMList = Arrays.asList(1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0);
-        ArrayList<Integer> bitsArray = new ArrayList<Integer>();
-        bitsArray.addAll(EOMList);
+        ArrayList<Integer> bitsArray = new ArrayList<>(EOMList);
         byte[] bytesArray = msg.getBytes();
         StringBuilder sb = new StringBuilder();
-        for(int i=0; i<bytesArray.length; i++){
-            String byteTemp = String.format("%8s", Integer.toBinaryString(bytesArray[i] & 0xFF)).replace(' ', '0');
-            for(int j=0; j<8; j++){
+        for (byte b : bytesArray) {
+            String byteTemp = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
+            for (int j = 0; j < 8; j++) {
                 sb.append(byteTemp.charAt(j));
                 bitsArray.add(Character.getNumericValue(byteTemp.charAt(j)));
             }
@@ -51,11 +40,11 @@ public class Steganography{
         return bitsArray;
     }
 
-    public Bitmap hideMessage() {
+    public Bitmap hideMessage(String msg) {
         int i=0;
         int countBits=0;
         int[] pixelsArray = getPixels();
-        ArrayList<Integer> bitsArray = stringToBits();
+        ArrayList<Integer> bitsArray = stringToBits(msg);
         while(countBits<bitsArray.size() && i<pixelsArray.length){
 
             int pixel = pixelsArray[i];
@@ -96,7 +85,7 @@ public class Steganography{
         return img;
     }
 
-
+    @SuppressWarnings("PointlessBitwiseExpression")
     private int overrideLastsBits(int byteToChange, int bitZero, int bitOne){
         int mask = 1 << 1;
         byteToChange = (byteToChange & ~mask) | ((bitZero << 1) & mask);
@@ -105,13 +94,11 @@ public class Steganography{
         return byteToChange;
     }
 
-
+    @SuppressWarnings("PointlessBitwiseExpression")
     private ArrayList<Integer> getBitsOfMessage (){
         int i=0;
-        int countBits=0;
         int[] pixelsArray = getPixels();
-        ArrayList<Integer> bitsArray = new ArrayList<Integer>();
-        List<Integer> EOMList = Arrays.asList(1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0);
+        ArrayList<Integer> bitsArray = new ArrayList<>();
         while(i<pixelsArray.length){
 
             int pixel = pixelsArray[i];
@@ -153,41 +140,40 @@ public class Steganography{
             boolean eq = true;
             int k=0;
             for(int p=16; p>0; p--){
-                if(bitsArray.get(bitsArray.size()-p)!=EOMList.get(k)){
+                if(!bitsArray.get(bitsArray.size() - p).equals(EOMList.get(k))){
                     eq = false;
                     break;
                 }
                 k++;
             }
-            if(eq)
-                return true;
+            return eq;
         }
         return false;
-
     }
-
 
     public String getHiddenMessage(){
         ArrayList<Integer> bitsArray = getBitsOfMessage();
         if(bitsArray.size() <= 16){
             return "";
         }
-        int start = 16;
-        StringBuilder sb = new StringBuilder();
+
+        StringBuilder sbBits = new StringBuilder();
         for(int i=0; i<bitsArray.size(); i++){
-            sb.append(bitsArray.get(i).toString());
+            sbBits.append(bitsArray.get(i).toString());
         }
-        String bitsString = sb.toString();
+        String bitsString = sbBits.toString();
+
+        StringBuilder sbResult = new StringBuilder();
+        int start = 16;
         while(start <= bitsArray.size()-24){
             int cValue = Integer.parseInt(bitsString.substring(start, start+8), 2);
             if(cValue>=0 && cValue<9)
-                msg += (char)(cValue+'0');
+                sbResult.append((char)(cValue+'0'));
             else
-                msg += (char)cValue;
+                sbResult.append((char)cValue);
             start+=8;
         }
-        return msg;
+        return sbResult.toString();
     }
-
 }
 
