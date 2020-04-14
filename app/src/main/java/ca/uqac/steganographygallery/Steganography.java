@@ -70,39 +70,47 @@ public class Steganography{
         Log.i("steganoTag", "getPixels return array of size "+pixelsArray.length);
         ArrayList<Integer> bitsArray = stringToBits();
         Log.i("steganoTag", "msg returned; bitsArray size = "+bitsArray.size());
+        Log.i("steganoTag", "bitsArray = "+bitsArray.toString());
         while(countBits<bitsArray.size() && i<pixelsArray.length){
 
             int pixel = pixelsArray[i];
+            Log.i("steganoTag", "pixel before modif "+pixel);
 
-            int alpha = (pixel>>24) & 0xFF;
+            /*int alpha = (pixel>>24) & 0xFF;
             int valueBitZero = bitsArray.get(countBits);
             countBits++;
             alpha = overrideLastsBits(alpha, valueBitZero, bitsArray.get(countBits));
-            countBits++;
+            countBits++;*/
 
             int red = (pixel>>16) & 0xFF;
-            valueBitZero = bitsArray.get(countBits);
+            int valueBitZero = bitsArray.get(countBits);
             countBits++;
             red = overrideLastsBits(red, valueBitZero, bitsArray.get(countBits));
             countBits++;
 
-            int green = (pixel>>8) & 0xFF;
-            valueBitZero = bitsArray.get(countBits);
-            countBits++;
-            green = overrideLastsBits(green, valueBitZero, bitsArray.get(countBits));
-            countBits++;
+            int green = (pixel >> 8) & 0xFF;
+            if(countBits<bitsArray.size()) {
+                valueBitZero = bitsArray.get(countBits);
+                countBits++;
+                green = overrideLastsBits(green, valueBitZero, bitsArray.get(countBits));
+                countBits++;
+            }
 
             int blue = pixel & 0xFF;
-            valueBitZero = bitsArray.get(countBits);
-            countBits++;
-            blue = overrideLastsBits(blue, valueBitZero, bitsArray.get(countBits));
-            countBits++;
+            if(countBits<bitsArray.size()) {
+                valueBitZero = bitsArray.get(countBits);
+                countBits++;
+                blue = overrideLastsBits(blue, valueBitZero, bitsArray.get(countBits));
+                countBits++;
+            }
 
-            pixel = (alpha<<24) | (red<<16) | (green<<8) | blue;
+            pixel = (red<<16) | (green<<8) | blue;
+            Log.i("steganoTag",  ""+red+" "+green+" "+blue);
             pixelsArray[i] = pixel;
+            Log.i("steganoTag", "pixel after modif "+pixel);
             i++;
         }
-        Log.i("steganoTag", "transformation completed");
+        //Log.i("steganoTag", "transformation completed");
         img.setPixels(pixelsArray, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
         return img;
         /*FileOutputStream out = new FileOutputStream(filePath);
@@ -114,56 +122,101 @@ public class Steganography{
 
     public int overrideLastsBits(int byteToChange, int bitZero, int bitOne){
         int mask = 1 << 1;
-        byteToChange = (byteToChange & ~mask) | ((bitOne << 1) & mask);
+        byteToChange = (byteToChange & ~mask) | ((bitZero << 1) & mask);
         mask = 1 << 0;
-        byteToChange = (byteToChange & ~mask) | ((bitZero << 0) & mask);
+        byteToChange = (byteToChange & ~mask) | ((bitOne << 0) & mask);
         return byteToChange;
     }
 
 
     public ArrayList<Integer> getMessage (){
+        Log.i("steganoTag", "function decode");
         int i=0;
         int countBits=0;
         int[] pixelsArray = getPixels();
         ArrayList<Integer> bitsArray = new ArrayList<Integer>();
         List<Integer> EOMList = Arrays.asList(1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0);
-        while(countBits<bitsArray.size() && i<pixelsArray.length){
+        while(i<pixelsArray.length){
 
             int pixel = pixelsArray[i];
 
-            int alpha = (pixel>>24) & 0xFF;
-            bitsArray.add(alpha & 2);
-            bitsArray.add(alpha & 1);
-
-            int red = (pixel>>16) & 0xFF;
-            bitsArray.add(red & 2);
-            bitsArray.add(red & 1);
-
-            int green = (pixel>>8) & 0xFF;
-            bitsArray.add(green & 2);
-            bitsArray.add(green & 1);
-
-            int blue = pixel & 0xFF;
-            bitsArray.add(blue & 2);
-            bitsArray.add(blue & 1);
-
+            /*int alpha = (pixel>>24) & 0xFF;
+            bitsArray.add((alpha >> 1) & 1);
+            bitsArray.add((alpha >> 0) & 1);*/
             if(bitsArray.size() == 16){
-                if(!bitsArray.equals(EOMList))
-                    return new ArrayList<Integer>(){};
+                if(!bitsArray.equals(EOMList)) {
+                    Log.i("steganoTag", "bitsArray "+bitsArray.toString());
+                    Log.i("steganoTag", "no encrypted message detected");
+                    return new ArrayList<Integer>() {};
+                }
             }
-
-            if(bitsArray.size() > 16){
+            if(bitsArray.size()>16 && bitsArray.size()%8==0){
                 boolean eq = true;
                 int k=0;
-                for(int p=15; p>=0; p--){
-                    if(bitsArray.get(bitsArray.size()-p)!=EOMList.get(k++)){
+                for(int p=16; p>0; p--){
+                    if(bitsArray.get(bitsArray.size()-p) != EOMList.get(k)){
                         eq = false;
                         break;
                     }
+                    k++;
                 }
-                if(eq == true)
+                if(eq)
                     return bitsArray;
             }
+            int red = (pixel>>16) & 0xFF;
+            bitsArray.add((red >> 1) & 1);
+            bitsArray.add((red >> 0) & 1);
+
+            if(bitsArray.size() == 16){
+                if(!bitsArray.equals(EOMList)) {
+                    Log.i("steganoTag", "bitsArray "+bitsArray.toString());
+                    Log.i("steganoTag", "no encrypted message detected");
+                    return new ArrayList<Integer>() {};
+                }
+            }
+            if(bitsArray.size()>16 && bitsArray.size()%8==0){
+                boolean eq = true;
+                int k=0;
+                for(int p=16; p>0; p--){
+                    if(bitsArray.get(bitsArray.size()-p)!=EOMList.get(k)){
+                        eq = false;
+                        break;
+                    }
+                    k++;
+                }
+                if(eq)
+                    return bitsArray;
+            }
+            int green = (pixel>>8) & 0xFF;
+            bitsArray.add((green >> 1) & 1);
+            bitsArray.add((green >> 0) & 1);
+
+            if(bitsArray.size() == 16){
+                if(!bitsArray.equals(EOMList)) {
+                    Log.i("steganoTag", "bitsArray "+bitsArray.toString());
+                    Log.i("steganoTag", "no encrypted message detected");
+                    return new ArrayList<Integer>() {};
+                }
+            }
+            if(bitsArray.size()>16 && bitsArray.size()%8==0){
+                boolean eq = true;
+                int k=0;
+                for(int p=16; p>0; p--){
+                    if(bitsArray.get(bitsArray.size()-p)!=EOMList.get(k)){
+                        eq = false;
+                        break;
+                    }
+                    k++;
+                }
+                if(eq)
+                    return bitsArray;
+            }
+            int blue = pixel & 0xFF;
+            bitsArray.add((blue >> 1) & 1);
+            bitsArray.add((blue >> 0) & 1);
+            Log.i("steganoTag", ""+red+" "+green+" "+blue);
+            Log.i("steganoTag", "pixel decryption "+pixel);
+
             i++;
         }
         return bitsArray;
@@ -172,6 +225,8 @@ public class Steganography{
 
     public String bitsToString(){
         ArrayList<Integer> bitsArray = getMessage();
+        Log.i("steganoTag", "bitsArray from encrypted message of size "+bitsArray.size());
+        Log.i("steganoTag", "full msg "+bitsArray.toString());
         if(bitsArray.size() == 0){
             return "";
         }
@@ -180,10 +235,10 @@ public class Steganography{
         for(int i=0; i<bitsArray.size(); i++){
             sb.append(bitsArray.get(i).toString());
         }
-        char[] charArray = sb.toString().toCharArray();
+        Log.i("steganoTag", "msg "+sb.toString());
+        String bitsString = sb.toString();
         while(start <= bitsArray.size()-24){
-            char[] bits = Arrays.copyOfRange(charArray, start, start + 8);
-            int cValue = Integer.parseInt(new String(bits));
+            int cValue = Integer.parseInt(bitsString.substring(start, start+8), 2);
             if(cValue>=0 && cValue<9)
                 msg += (char)(cValue+'0');
             else

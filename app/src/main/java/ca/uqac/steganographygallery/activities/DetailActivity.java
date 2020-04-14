@@ -2,6 +2,7 @@ package ca.uqac.steganographygallery.activities;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -48,7 +49,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         String picturePath = Objects.requireNonNull(b).getString(PARAM_PICTURE);
         mPictureFile = new File(picturePath);
 
-        Bitmap bitmap = null;
+        /*Bitmap bitmap = null;
         try {
             bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + mPictureFile.getAbsolutePath()));
             Steganography s = new Steganography(bitmap, "");
@@ -58,7 +59,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         mBtnSave.setOnClickListener(this);
         setupUI();
     }
@@ -94,18 +95,24 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             try {
                 //InputStream imageBytes = assetManager.open("file://" + mPictureFile.getAbsolutePath());
                 Toast.makeText(this, "Trying to use Steganography", Toast.LENGTH_SHORT).show();
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + mPictureFile.getAbsolutePath()));
+                //Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("file://" + mPictureFile.getAbsolutePath()));
+                BitmapFactory.Options op = new BitmapFactory.Options();
+                op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
                 Toast.makeText(this, "bitmap charged "+bitmap.getWidth(), Toast.LENGTH_SHORT).show();
 
                 //replace "test" msg by content of textview
                 Steganography s = new Steganography(bitmap, "test");
                 bitmap = s.hideMessage();
+
                 Toast.makeText(this, "bitmap modified", Toast.LENGTH_SHORT).show();
-                FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
+                Steganography s2 = new Steganography(bitmap, "");
+                Toast.makeText(this, s2.bitsToString(), Toast.LENGTH_SHORT).show();
+                /*FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
                 Toast.makeText(this, "outputstream created", Toast.LENGTH_SHORT).show();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                 Toast.makeText(this, "bitmap saved", Toast.LENGTH_SHORT).show();
-                out.close();
+                out.close();*/
             } catch (IOException e) {
                 Toast.makeText(this, "Error loading image file", Toast.LENGTH_SHORT).show();
             }
