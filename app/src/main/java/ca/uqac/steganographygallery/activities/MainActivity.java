@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
             mPicturesAdapter.swapData(picturesList);
         }
         else{
-            Toast.makeText(this, "Couldn't load images from device", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.loading_error_alert, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements PicturesAdapter.P
                 loadPictures();
             }
             else{
-                Toast.makeText(this, "Error! Permission not granted", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.permission_error, Toast.LENGTH_LONG).show();
             }
         }
     }

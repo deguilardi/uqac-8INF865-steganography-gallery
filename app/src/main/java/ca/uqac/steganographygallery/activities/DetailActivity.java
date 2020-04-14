@@ -6,14 +6,14 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.squareup.picasso.Picasso;
 
@@ -32,9 +32,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     public static final String PARAM_PICTURE = "PARAM_PICTURE";
 
     File mPictureFile;
-    @BindView(R.id.thumb_view) ImageView mThumbView;
-    @BindView(R.id.btn_save) Button mBtnSave;
-    @BindView(R.id.txt_edit) EditText mTxtEdit;
+    @BindView(R.id.thumb_view) AppCompatImageView mThumbView;
+    @BindView(R.id.btn_save) AppCompatButton mBtnSave;
+    @BindView(R.id.txt_edit) AppCompatEditText mTxtEdit;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,13 +93,13 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                 op.inPreferredConfig = Bitmap.Config.ARGB_8888;
                 Bitmap bitmap = BitmapFactory.decodeFile(mPictureFile.getAbsolutePath(), op);
                 Steganography s11y = new Steganography(bitmap);
-                bitmap = s11y.hideMessage(mTxtEdit.getText().toString());
+                bitmap = s11y.hideMessage(Objects.requireNonNull(mTxtEdit.getText()).toString());
                 FileOutputStream out = new FileOutputStream(mPictureFile.getAbsolutePath());
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                 out.close();
-                Toast.makeText(this, "Message hidden with success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.saving_success_alert, Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
-                Toast.makeText(this, "Error loading image file", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.saving_error_alert, Toast.LENGTH_SHORT).show();
             }
         }
     }

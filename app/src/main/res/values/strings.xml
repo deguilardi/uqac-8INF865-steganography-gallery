@@ -1,5 +1,12 @@
 <resources>
-    <string name="app_name">Steganography Gallery</string>
+    <string name="app_name" translatable="false">Steganography Gallery</string>
+    <string name="transition_thumb" translatable="false">transition_thumb</string>
+    <string name="transition_label" translatable="false">transition_label</string>
 
-    <string name="transition_thumb">transition_thumb</string>
+    <string name="save">save</string>
+    <string name="hidden_text">Hidden text</string>
+    <string name="permission_error">Permission missing. Please allow the app to load images.</string>
+    <string name="loading_error_alert">Error loading image.</string>
+    <string name="saving_success_alert">Message hidden with success.</string>
+    <string name="saving_error_alert">Error saving image file.</string>
 </resources>

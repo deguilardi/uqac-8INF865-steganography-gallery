@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="save">enregistrer</string>
+    <string name="hidden_text">Texte masqué</string>
+    <string name="permission_error">Autorisation manquante. Veuillez autoriser l\'application à charger des images.</string>
+    <string name="loading_error_alert">Erreur lors du chargement de l\'image.</string>
+    <string name="saving_success_alert">Message caché avec succès.</string>
+    <string name="saving_error_alert">Erreur lors de l\'enregistrement du fichier image.</string>
+</resources>
